@@ -1,0 +1,17 @@
+Collection::macro('crossMerge', function (Collection $collection) {
+            return $this->reduce(function (Collection $result, $item) use ($collection) {
+                $result->push($item);
+                if ($collection->isNotEmpty()) {
+                    $result->push($collection->shift());
+                }
+                return $result;
+            }, new Collection())->concat($collection);
+        });
+        
+public function queue_calc()
+    {
+        $orders = User::where('statusaccount_id', '2')->where('active', '0')->orderBy('date_inorder')->get();
+        $active_orders = User::where('statusaccount_id', '2')->where('active', '1')->orderBy('active_order')->get();
+        $active_first = User::activeorders()->value('active_order') === 1;
+        return collect($active_first ? $active_orders : $orders)->crossMerge(!$active_first ? $active_orders : $orders)->paginate(15);
+    }
